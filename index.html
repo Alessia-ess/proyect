@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Muse Shop</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React y ReactDOM (versión 17) -->
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+
+    <!-- Babel para JSX en navegador -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/chat.css" />
+
+    <!-- Font Awesome para iconos -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+
+  <body class="bg-gray-50">
+    <div id="app"></div>
+
+    <script type="text/babel" src="js/Navbar.js"></script>
+    <script type="text/babel" src="js/SearchBar.js"></script>
+    <script type="text/babel" src="js/SupportChat.js"></script>
+    <script type="text/babel" src="js/AlbumCard.js"></script>
+    <script type="text/babel" src="js/AlbumDetail.js"></script>
+    <script type="text/babel" src="js/AuthPage.js"></script>
+    <script type="text/babel" src="js/CartPage.js"></script>
+    <script type="text/babel" src="js/HelpPage.js"></script>
+    <script type="text/babel" src="js/Footer.js"></script>
+
+    <script type="text/babel">
+      function App() {
+        const { useState, useEffect, useMemo } = React;
+
+        const [view, setView] = useState("home");
+        const [selectedAlbum, setSelectedAlbum] = useState(null);
+        const [showSearch, setShowSearch] = useState(false);
+        const [showSupport, setShowSupport] = useState(false);
+        const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+        const [albumsData, setAlbumsData] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState(null);
+
+        const [cart, setCart] = useState(() => {
+          try {
+            const saved = localStorage.getItem("museShopCart");
+            return saved ? JSON.parse(saved) : [];
+          } catch (error) {
+            console.error("Error al cargar el carrito:", error);
+            return [];
+          }
+        });
+
+        useEffect(() => {
+          const fetchAlbums = async () => {
+            try {
+              const response = await fetch("/js/data.Product.json");
+              if (!response.ok) throw new Error("Error al cargar los álbumes");
+              const data = await response.json();
+              if (!Array.isArray(data))
+                throw new Error("Formato de datos inválido");
+              setAlbumsData(data);
+            } catch (err) {
+              console.error("Error:", err);
+              setError(err.message);
+            } finally {
+              setLoading(false);
+            }
+          };
+          fetchAlbums();
+        }, []);
+
+        useEffect(() => {
+          const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+          };
+          const debounce = (func, wait) => {
+            let timeout;
+            return function () {
+              clearTimeout(timeout);
+              timeout = setTimeout(func, wait);
+            };
+          };
+          const debouncedResize = debounce(handleResize, 250);
+          window.addEventListener("resize", debouncedResize);
+          return () => window.removeEventListener("resize", debouncedResize);
+        }, []);
+
+        useEffect(() => {
+          const handleHashChange = () => {
+            const [route, param] = window.location.hash.substring(1).split("=");
+
+            switch (route) {
+              case "cart":
+                setView("cart");
+                break;
+              case "login":
+                setView("login");
+                break;
+              case "help":
+                setView("help");
+                break;
+              case "album":
+                const albumId = parseInt(param);
+                const album = albumsData.find((a) => a.id === albumId);
+                setSelectedAlbum(album || null);
+                setView(album ? "album" : "home");
+                break;
+              default:
+                setView("home");
+            }
+          };
+          window.addEventListener("hashchange", handleHashChange);
+          handleHashChange();
+          return () =>
+            window.removeEventListener("hashchange", handleHashChange);
+        }, [albumsData]);
+
+        const addToCart = (album, quantity = 1) => {
+          setCart((prev) => {
+            const existing = prev.find((item) => item.id === album.id);
+            return existing
+              ? prev.map((item) =>
+                  item.id === album.id
+                    ? { ...item, quantity: item.quantity + quantity }
+                    : item
+                )
+              : [...prev, { ...album, quantity }];
+          });
+        };
+
+        const updateQuantity = (id, quantity) => {
+          if (quantity < 1) return removeFromCart(id);
+          setCart((prev) =>
+            prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+          );
+        };
+
+        const removeFromCart = (id) => {
+          setCart((prev) => prev.filter((item) => item.id !== id));
+        };
+
+        const handleCheckout = () => {
+          setCart([]);
+          window.location.hash = "";
+          alert("¡Compra realizada con éxito!");
+        };
+
+        useEffect(() => {
+          try {
+            localStorage.setItem("museShopCart", JSON.stringify(cart));
+          } catch (error) {
+            console.error("Error al guardar el carrito:", error);
+          }
+        }, [cart]);
+
+        const cartCount = useMemo(
+          () => cart.reduce((sum, item) => sum + item.quantity, 0),
+          [cart]
+        );
+
+        const renderView = () => {
+          if (loading)
+            return <div className="text-center py-8">Cargando catálogo...</div>;
+          if (error)
+            return (
+              <div className="text-center py-8 text-red-500">
+                Error: {error}
+              </div>
+            );
+
+          switch (view) {
+            case "album":
+              return (
+                selectedAlbum && (
+                  <AlbumDetail
+                    album={selectedAlbum}
+                    onBack={() => (window.location.hash = "")}
+                    onAddToCart={addToCart}
+                  />
+                )
+              );
+            case "login":
+              return <AuthPage />;
+            case "cart":
+              return (
+                <CartPage
+                  cart={cart}
+                  updateQuantity={updateQuantity}
+                  removeFromCart={removeFromCart}
+                  onCheckout={handleCheckout}
+                />
+              );
+            case "help":
+              return <HelpPage />;
+            default:
+              return (
+                <div className="max-w-6xl mx-auto px-4">
+                  <h1 className="text-3xl font-bold mb-6 text-center md:text-left">
+                    Álbumes Destacados
+                  </h1>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {albumsData.map((album) => (
+                      <AlbumCard
+                        key={album.id}
+                        album={album}
+                        onAddToCart={addToCart}
+                        onSelect={() => {
+                          setSelectedAlbum(album);
+                          window.location.hash = `album=${album.id}`;
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+          }
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            <Navbar
+              cartCount={cartCount}
+              onSearchClick={() => setShowSearch(true)}
+              onSupportClick={() => setShowSupport(true)}
+            />
+
+            {showSearch && (
+              <SearchBar
+                albums={albumsData}
+                onClose={() => setShowSearch(false)}
+                onAlbumSelect={(album) => {
+                  setSelectedAlbum(album);
+                  window.location.hash = `album=${album.id}`;
+                }}
+              />
+            )}
+
+            {showSupport && (
+              <SupportChat
+                onClose={() => setShowSupport(false)}
+                isMobile={isMobile}
+              />
+            )}
+
+            <main className="flex-grow p-4 md:p-6">{renderView()}</main>
+
+            <Footer />
+          </div>
+        );
+      }
+
+      ReactDOM.render(<App />, document.getElementById("app"));
+    </script>
+  </body>
+</html>
