@@ -33,7 +33,7 @@ function App() {
   useEffect(() => {
     const fetchAlbums = async () => {
       try {
-        const response = await fetch("js/data.Product.json");
+        const response = await fetch("./data.Product.json");
         if (!response.ok) throw new Error("Error al cargar los álbumes");
         const data = await response.json();
         if (!Array.isArray(data)) throw new Error("Formato de datos inválido");
