@@ -15,7 +15,7 @@ function Navbar({ cartCount, onSearchClick, onSupportClick }) {
           onClick={onSearchClick}
           className="p-2 hover:bg-white/20 rounded-full"
         >
-          <i className="fas fa-headphones text-xl"></i>
+          <i className="fas fa-search text-xl"></i>
         </button>
 
         <a href="#login" className="p-2 hover:bg-white/20 rounded-full">
