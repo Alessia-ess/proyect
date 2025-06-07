@@ -37,7 +37,8 @@
 
     <script type="text/babel" src="js/Navbar.js"></script>
     <script type="text/babel" src="js/SearchBar.js"></script>
-    <script type="text/babel" src="js/SupportChat.js"></script>
+    <script type="text/babel" src="js/Catalogo.js"></script>
+    <script type="text/babel" src="js/SupportPage.js"></script>
     <script type="text/babel" src="js/AlbumCard.js"></script>
     <script type="text/babel" src="js/AlbumDetail.js"></script>
     <script type="text/babel" src="js/AuthPage.js"></script>
@@ -122,6 +123,14 @@
                 const album = albumsData.find((a) => a.id === albumId);
                 setSelectedAlbum(album || null);
                 setView(album ? "album" : "home");
+                break;
+              default:
+                setView("home");
+              case "catalog":
+                setView("catalog");
+                break;
+              case "support":
+                setView("support");
                 break;
               default:
                 setView("home");
@@ -210,6 +219,10 @@
               );
             case "help":
               return <HelpPage />;
+            case "catalog":
+              return <Catalogo albums={albumsData} onAddToCart={addToCart} />;
+            case "support":
+              return <SupportPage />;
             default:
               return (
                 <div className="max-w-6xl mx-auto px-4">
@@ -233,7 +246,7 @@
               );
           }
         };
-
+        
         return (
           <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar
