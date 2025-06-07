@@ -11,12 +11,9 @@ function Navbar({ cartCount, onSearchClick, onSupportClick }) {
           <i className="fas fa-home text-xl"></i>
         </a>
 
-        <button
-          onClick={onSearchClick}
-          className="p-2 hover:bg-white/20 rounded-full"
-        >
+        <a href="#catalog" className="p-2 hover:bg-white/20 rounded-full">
           <i className="fas fa-search text-xl"></i>
-        </button>
+        </a>
 
         <a href="#login" className="p-2 hover:bg-white/20 rounded-full">
           <i className="fas fa-user text-xl"></i>
@@ -31,12 +28,9 @@ function Navbar({ cartCount, onSearchClick, onSupportClick }) {
           )}
         </a>
 
-        <button
-          onClick={onSupportClick}
-          className="p-2 hover:bg-white/20 rounded-full"
-        >
+        <a href="#support" className="p-2 hover:bg-white/20 rounded-full">
           <i className="fas fa-headset text-xl"></i>
-        </button>
+        </a>
 
         <a href="#help" className="p-2 hover:bg-white/20 rounded-full">
           <i className="fas fa-question-circle text-xl"></i>
