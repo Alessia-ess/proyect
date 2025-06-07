@@ -1,96 +1,88 @@
-function SupportChat({ onClose, isMobile }) {
-  const [messages, setMessages] = React.useState([
-    {
-      text: "¡Hola! Soy tu asistente de Muse Shop. ¿En qué puedo ayudarte hoy?",
-      sender: "agent",
-    },
-  ]);
+function SupportPage() {
+  const [form, setForm] = React.useState({
+    nombre: "",
+    email: "",
+    mensaje: "",
+    tipo: "soporte",
+  });
+  const [enviado, setEnviado] = React.useState(false);
 
-  const [newMessage, setNewMessage] = React.useState("");
-  const messagesEndRef = React.useRef(null);
-
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  React.useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-
-    const userMessage = { text: newMessage, sender: "user" };
-    setMessages((prev) => [...prev, userMessage]);
-    setNewMessage("");
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "Gracias por tu mensaje. Un agente te responderá pronto.",
-          sender: "agent",
-        },
-      ]);
-    }, 1000);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setEnviado(true);
   };
 
-  const containerClasses = isMobile
-    ? "fixed inset-x-0 bottom-0 top-24 z-40 bg-white shadow-xl flex flex-col"
-    : "fixed bottom-4 right-4 w-80 max-h-[500px] z-50 rounded-lg bg-white shadow-xl flex flex-col";
-
-  return ReactDOM.createPortal(
-    <div className={containerClasses}>
-      <div className="bg-blue-500 p-3 rounded-t-lg flex justify-between items-center">
-        <h3 className="font-bold text-white">Atención al cliente</h3>
-        <button
-          onClick={onClose}
-          className="text-white hover:text-gray-200 transition"
-        >
-          <i className="fas fa-times"></i>
-        </button>
-      </div>
-
-      <div
-        className="flex-1 p-3 overflow-y-auto"
-        style={{
-          maxHeight: isMobile ? "calc(100vh - 170px)" : "300px",
-        }}
-      >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`rounded-lg p-3 mb-2 max-w-xs ${
-              msg.sender === "user"
-                ? "bg-blue-600 text-white ml-auto"
-                : "bg-gray-100 mr-auto"
-            }`}
-          >
-            {msg.text}
+  return (
+    <div className="max-w-lg mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold mb-4 text-center">Contáctanos</h1>
+      <p className="mb-6 text-center text-gray-600">
+        ¿Tienes una duda, problema o sugerencia? Completa el formulario y te
+        responderemos pronto.
+      </p>
+      {enviado ? (
+        <div className="bg-green-100 text-green-700 p-4 rounded text-center mb-6">
+          ¡Gracias por tu mensaje! Te contactaremos pronto.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block mb-1 font-medium">Nombre</label>
+            <input
+              type="text"
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              required
+              className="w-full border rounded px-3 py-2"
+            />
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className="p-3 border-t flex gap-2 bg-gray-50">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Escribe tu mensaje..."
-          className="flex-1 p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-        />
-        <button
-          onClick={handleSendMessage}
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
-        >
-          <i className="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>,
-    document.body
+          <div>
+            <label className="block mb-1 font-medium">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Tipo de mensaje</label>
+            <select
+              name="tipo"
+              value={form.tipo}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="soporte">Soporte</option>
+              <option value="sugerencia">Sugerencia</option>
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Mensaje</label>
+            <textarea
+              name="mensaje"
+              value={form.mensaje}
+              onChange={handleChange}
+              required
+              rows={4}
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition"
+          >
+            Enviar
+          </button>
+        </form>
+      )}
+    </div>
   );
 }
+
